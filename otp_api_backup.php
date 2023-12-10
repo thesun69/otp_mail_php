@@ -36,15 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Your PHPMailer settings here:
                 $mail->SMTPDebug = 0;
                 $mail->isSMTP();
-                $mail->Host       = 'ecashxeccrypto.com';
+                $mail->Host       = 'smtp.hostinger.com';
                 $mail->SMTPAuth   = true;
-                $mail->Username   = 'support@ecashxeccrypto.com';
-                $mail->Password   = '?iYQKf_G5o64q6';
+                $mail->Username   = 'otpsender@devsun.tech';
+                $mail->Password   = '(i1I^:8,GPRu*c6alTVgy=BjKW34dS$U.Dh@k&mMOs+r)';
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                 $mail->Port       = 465;
 
                 // Recipients
-                $mail->setFrom('support@ecashxeccrypto.com', 'EcashXecCrypto');
+                $mail->setFrom('otpsender@devsun.tech', 'EcashXecCrypto');
                 $mail->addAddress($email);
 
                 // Content

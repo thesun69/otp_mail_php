@@ -1,33 +1,63 @@
+Manual Configuration of Email from myHosting  
+
+Protocol: Incoming server (IMAP)
+Hostname: imap.hostinger.com
+Port: 993
+SSL/TLS: true
+
+Protocol: Outgoing server (SMTP)
+Hostname: smtp.hostinger.com
+Port: 465
+SSL/TLS: true
+
+Protocol: Incoming server (POP)
+Hostname: pop.hostinger.com
+Port: 995
+SSL/TLS: true
+
 <?php
+// config.php
+return [
+    'email' => [
+        'host' => 'smtp.hostinger.com',
+        'username' => 'otpsender@devsun.tech',
+        'password' => '(i1I^:8,GPRu*c6alTVgy=BjKW34dS$U.Dh@k&mMOs+r)',
+        'port' => 465,
+        'from' => 'otpsender@devsun.tech',
+        'from_name' => 'EcashXecCrypto',
+    ],
+];
+?>
+
+
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 $config = require 'config.php';  // Adjust the path as needed
 
-// Log function to help debugging
-function logError($message) {
-    error_log($message . PHP_EOL, 3, "errors.log");
+header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Content-Type: application/json');
+
+
+// Database setup
+$db = new PDO('sqlite:otps.db');
+$db->exec("CREATE TABLE IF NOT EXISTS otps (email TEXT, otp TEXT, expiration DATETIME)");
+
+$response = [];
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit();  // Just exit after returning the headers
 }
 
-try {
-    header('Access-Control-Allow-Origin: *'); 
-    header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
-    header('Content-Type: application/json');
-
-    // Database setup
-    $db = new PDO('sqlite:otps.db');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Set error mode to exception
-    $db->exec("CREATE TABLE IF NOT EXISTS otps (email TEXT, otp TEXT, expiration DATETIME)");
-
-    $response = [];
-
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-        exit();  // Just exit after returning the headers
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    try {
         switch ($_GET['action']) {
             case 'send':
                 $email = $_POST['email'];
@@ -43,21 +73,21 @@ try {
             default:
                 throw new Exception('Invalid action');
         }
+    } catch (Exception $e) {
+        $response = [
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ];
     }
-} catch (Exception $e) {
-    logError($e->getMessage()); // Log error to errors.log
-    $response = [
-        'status' => 'error',
-        'message' => 'There was an error processing your request.'
-    ];
 }
+
+
 
 echo json_encode($response);
 
 function sendOtp($email, $db, $config) {
     $stmt = $db->prepare("DELETE FROM otps WHERE email = ?");
     $stmt->execute([$email]);
-    
     // Generate OTP
     $otp = rand(100000, 999999);
 
@@ -89,12 +119,7 @@ function sendOtp($email, $db, $config) {
     $mail->Subject = 'Your otp code.';
     $mail->Body    = $emailContent;
 
-    try {
-        $mail->send();
-    } catch (Exception $e) {
-        logError("Mailer Error: " . $e->getMessage());  // log error to errors.log
-        throw new Exception("Failed to send OTP email.");
-    }
+    $mail->send();
 
     // After successful send, clean up old OTPs
     cleanupOtps($db);
@@ -115,7 +140,6 @@ function verifyOtp($email, $otpProvided, $db) {
         } elseif ($now >= $expiration) {
             throw new Exception('OTP expired!');
         } else {
-            global $response;
             $response = [
                 'status' => 'success',
                 'message' => 'OTP Verified!'
@@ -131,3 +155,11 @@ function cleanupOtps($db) {
     $stmt->execute([(new DateTime())->format('Y-m-d H:i:s')]);
 }
 ?>
+
+Now the otp email is not send when make action send  Help me fix please
+
+https://ecashxeccrypto.com/email/otp_api.php?action=send
+
+{
+    "email": "kuayai66@gmail.com"
+}

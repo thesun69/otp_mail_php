@@ -1,0 +1,16 @@
+Manual Configuration of Email from myHosting  
+
+Protocol: Incoming server (IMAP)
+Hostname: imap.hostinger.com
+Port: 993
+SSL/TLS: true
+
+Protocol: Outgoing server (SMTP)
+Hostname: smtp.hostinger.com
+Port: 465
+SSL/TLS: true
+
+Protocol: Incoming server (POP)
+Hostname: pop.hostinger.com
+Port: 995
+SSL/TLS: true
